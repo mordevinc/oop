@@ -27,6 +27,15 @@ public:
 
     // Добавляет элемент в конец
     void push_back(const std::string& value);
+
+    // Вставка элемента по индексу (со сдвигом остальных)
+    void insert_at(size_t index, const std::string& value);
+    // Получение элемента по индексу (с проверкой границ)
+    std::string get(size_t index) const;
+    // Замена элемента по индексу
+    void set(size_t index, const std::string& value);
+    // Удаление элемента по индексу (со сдвигом)
+    void remove_at(size_t index);
     
     // Возвращает текущее количество элементов
     size_t size() const;

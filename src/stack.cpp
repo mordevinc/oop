@@ -75,33 +75,30 @@ void Stack::load(const std::string& filename) {
     std::ifstream f(filename, std::ios::binary);
     if (!f) return;
     
-    // Очистка перед загрузкой
-    while (head != nullptr) { 
-        Node* t = head; 
-        head = head->next; 
-        delete t; 
-    }
+    while (head != nullptr) { Node* t = head; head = head->next; delete t; }
     sz = 0;
     
     size_t file_sz = 0;
     if (!f.read(reinterpret_cast<char*>(&file_sz), sizeof(file_sz))) return;
+    if (file_sz > 1000000) return; // Защита от мусора
     
-    // Создаем временный массив строк (без использования вектора)
+    // Временный массив для сохранения правильного порядка
     std::string* temp_arr = new std::string[file_sz];
+    size_t count = 0;
     
     for (size_t i = 0; i < file_sz; ++i) {
         size_t len = 0;
         if (!f.read(reinterpret_cast<char*>(&len), sizeof(len))) break;
+        if (len > 1000000) break;
         
         std::string temp(len, '\0');
         if (!f.read(&temp[0], len)) break;
-        temp_arr[i] = temp;
+        temp_arr[count++] = temp;
     }
     
-    // Восстанавливаем стек в обратном порядке, чтобы вершина была правильной
-    for (int i = (int)file_sz - 1; i >= 0; --i) {
+    // Восстанавливаем стек с конца массива, чтобы "Top" снова стал вершиной
+    for (int i = (int)count - 1; i >= 0; --i) {
         push(temp_arr[i]);
     }
-    
     delete[] temp_arr;
 }

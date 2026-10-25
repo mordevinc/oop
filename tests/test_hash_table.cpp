@@ -1,35 +1,46 @@
 #include <gtest/gtest.h>
 #include "hash_table.h"
 
-// Тест 1: Проверяем базовую вставку.
-TEST(HashTableTest, InsertOperations) {
-    HashTable ht(10); // 10 корзин
+TEST(HashTableTest, InsertAndGet) {
+    HashTable ht(10);
+    ht.insert("name", "John");
+    ht.insert("age", "25");
     
-    ht.insert("key1", "value1");
-    ht.insert("key2", "value2");
-    
-    // Размер таблицы должен вырасти
     EXPECT_EQ(ht.size(), 2);
+    EXPECT_EQ(ht.get("name"), "John");
+    EXPECT_EQ(ht.get("unknown"), ""); 
 }
 
-// Тест 2: Проверяем правило трех (копирование) и сериализацию.
-TEST(HashTableTest, CopyAndSerialization) {
-    HashTable ht1(5);
-    ht1.insert("A", "1");
+TEST(HashTableTest, UpdateAndRemove) {
+    HashTable ht(10);
+    ht.insert("key", "value1");
+    ht.insert("key", "value2"); // Обновление
+    EXPECT_EQ(ht.size(), 1);
+    EXPECT_EQ(ht.get("key"), "value2");
     
-    // Копируем таблицу (используется конструктор копирования)
+    ht.remove("key");
+    EXPECT_EQ(ht.size(), 0);
+    
+    // Удаление несуществующего ключа
+    ht.remove("unknown"); 
+    EXPECT_EQ(ht.size(), 0);
+}
+
+// Тест коллизий и копирования
+TEST(HashTableTest, CollisionsAndCopy) {
+    HashTable ht1(5); // Маленькая таблица для вызова коллизий
+    ht1.insert("key1", "val1");
+    ht1.insert("key2", "val2"); // Может попасть в ту же корзину
+    
+    ht1.print();
+    
+    // Проверка глубокого копирования
     HashTable ht2 = ht1;
-    EXPECT_EQ(ht2.size(), 1);
+    EXPECT_EQ(ht2.size(), 2);
+    EXPECT_EQ(ht2.get("key1"), "val1");
     
-    // Проверяем сохранение/загрузку
     ht1.save("test_ht.bin");
     HashTable ht3(5);
     ht3.load("test_ht.bin");
-    EXPECT_EQ(ht3.size(), 1);
-}
-
-TEST(HashTableTest, PrintTest) {
-    HashTable ht(5);
-    ht.insert("k", "v");
-    ht.print(); // Покрываем print
+    EXPECT_EQ(ht3.get("key1"), "val1");
 }

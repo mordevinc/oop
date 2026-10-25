@@ -85,25 +85,20 @@ void Queue::load(const std::string& filename) {
     std::ifstream f(filename, std::ios::binary);
     if (!f) return;
     
-    // Очистка
-    while (head != nullptr) { 
-        Node* t = head; 
-        head = head->next; 
-        delete t; 
-    }
-    tail = nullptr; 
-    sz = 0;
+    while (head != nullptr) { Node* t = head; head = head->next; delete t; }
+    tail = nullptr; sz = 0;
     
     size_t file_sz = 0;
     if (!f.read(reinterpret_cast<char*>(&file_sz), sizeof(file_sz))) return;
+    if (file_sz > 1000000) return;
     
     for (size_t i = 0; i < file_sz; ++i) {
         size_t len = 0;
         if (!f.read(reinterpret_cast<char*>(&len), sizeof(len))) break;
+        if (len > 1000000) break;
         
         std::string temp(len, '\0');
         if (!f.read(&temp[0], len)) break;
-        
         push(temp);
     }
 }

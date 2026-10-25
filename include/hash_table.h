@@ -9,29 +9,36 @@ class HashTable {
 private:
     ForwardList* buckets; // Массив списков (корзин)
     size_t capacity;      // Количество корзин
-    size_t sz;            // Общее количество элементов
+    size_t sz;            // Общее количество элементов в таблице
 
-    // Внутренняя хеш-функция для вычисления индекса корзины.
+    // Внутренняя хеш-функция для вычисления индекса корзины по ключу.
     size_t hashFunc(const std::string& key) const;
 
 public:
     // Конструктор. Выделяет память под массив корзин.
     explicit HashTable(size_t cap = 100);
     
+    // Конструктор копирования (правило трех).
+    HashTable(const HashTable& other);
+    
+    // Оператор присваивания (правило трех).
+    HashTable& operator=(const HashTable& other);
+    
     // Деструктор. Освобождает память.
     ~HashTable();
-
-    // Геттер для получения количества элементов (нужен для тестов)
-    size_t size() const; 
-
-    // Конструктор копирования
-    HashTable(const HashTable& other);
-    // Оператор присваивания
-    HashTable& operator=(const HashTable& other);
 
     // Добавление пары ключ-значение.
     void insert(const std::string& key, const std::string& value);
     
+    // Получение значения по ключу (возвращает пустую строку, если нет).
+    std::string get(const std::string& key) const;
+    
+    // Удаление по ключу.
+    void remove(const std::string& key);
+    
+    // Получение текущего количества элементов.
+    size_t size() const;
+
     // Вывод всей таблицы в консоль.
     void print() const;
 

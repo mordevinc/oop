@@ -36,7 +36,6 @@ void AVLTree::updateHeight(Node* node) {
 }
 
 // Малое правое вращение (применяется, когда перевес слева).
-// ВАЖНО: за пределами класса тип Node нужно указывать как AVLTree::Node
 AVLTree::Node* AVLTree::rotateRight(Node* y) {
     Node* x = y->left;
     Node* T2 = x->right;
@@ -86,7 +85,7 @@ AVLTree::Node* AVLTree::balance(Node* node) {
     return node;
 }
 
-// Рекурсивная вставка элемента (как в обычном BST).
+// Рекурсивная вставка элемента.
 AVLTree::Node* AVLTree::insert(Node* node, int key) {
     if (!node) return new Node(key); // Нашли место для нового узла
 
@@ -107,18 +106,71 @@ void AVLTree::insert(int key) {
     sz++;
 }
 
+// Вспомогательный метод: найти узел с минимальным ключом (самый левый)
+AVLTree::Node* AVLTree::findMin(Node* node) {
+    while (node && node->left) {
+        node = node->left;
+    }
+    return node;
+}
 
-// Проверяет, есть ли ключ в дереве (обычный поиск по правилам BST)
+// Рекурсивное удаление элемента
+AVLTree::Node* AVLTree::removeRec(Node* node, int key) {
+    if (!node) return nullptr;
+
+    if (key < node->key) {
+        node->left = removeRec(node->left, key);
+    } else if (key > node->key) {
+        node->right = removeRec(node->right, key);
+    } else {
+        // Нашли элемент, который нужно удалить
+        if (!node->left || !node->right) {
+            // Случай 1: нет детей или только один ребенок
+            Node* temp = node->left ? node->left : node->right;
+            if (!temp) {
+                // Нет детей (лист) - просто удаляем
+                delete node;
+                return nullptr;
+            } else {
+                // Один ребенок - заменяем текущий узел ребенком
+                Node* old_node = node;
+                node = temp;
+                delete old_node;
+            }
+        } else {
+            // Случай 2: два ребенка
+            // Находим минимальный узел в правом поддереве
+            const Node* temp = findMin(node->right);
+            // Заменяем ключ текущего узла на минимальный
+            node->key = temp->key;
+            // Удаляем минимальный узел из правого поддерева
+            node->right = removeRec(node->right, temp->key);
+        }
+    }
+    
+    if (!node) return nullptr;
+    
+    // Балансируем узел после удаления
+    return balance(node);
+}
+
+// Публичный метод удаления
+void AVLTree::remove(int key) {
+    if (contains(key)) {
+        root = removeRec(root, key);
+        sz--;
+    }
+}
+
+// Поиск элемента (без изменений)
 bool AVLTree::contains(int key) const {
     Node* curr = root;
     while (curr != nullptr) {
-        if (key == curr->key) return true; // Нашли
-        // Если искомый ключ меньше, идем влево, иначе вправо
+        if (key == curr->key) return true;
         curr = (key < curr->key) ? curr->left : curr->right;
     }
-    return false; // Не нашли
+    return false;
 }
-
 
 size_t AVLTree::size() const { 
     return sz; 
@@ -132,76 +184,83 @@ void AVLTree::printInOrder(Node* node) const {
     printInOrder(node->right);      // Правое поддерево
 }
 
-// Вывод дерева.
+// Вывод дерева (inorder).
 void AVLTree::print() const {
     std::cout << "Tree (inorder): ";
     printInOrder(root);
     std::cout << "\n";
 }
 
-// Рекурсивный обход (Preorder) для сохранения дерева в файл
+// Прямой обход (корень, лево, право)
+void AVLTree::printPreOrder(Node* node) const {
+    if (!node) return;
+    std::cout << node->key << " ";  // Корень
+    printPreOrder(node->left);      // Левое поддерево
+    printPreOrder(node->right);     // Правое поддерево
+}
+
+// Вывод дерева (preorder).
+void AVLTree::printPreorder() const {
+    std::cout << "Tree (preorder): ";
+    printPreOrder(root);
+    std::cout << "\n";
+}
+
+// Обратный обход (лево, право, корень)
+void AVLTree::printPostOrder(Node* node) const {
+    if (!node) return;
+    printPostOrder(node->left);     // Левое поддерево
+    printPostOrder(node->right);    // Правое поддерево
+    std::cout << node->key << " ";  // Корень
+}
+
+// Вывод дерева (postorder).
+void AVLTree::printPostorder() const {
+    std::cout << "Tree (postorder): ";
+    printPostOrder(root);
+    std::cout << "\n";
+}
+
+// Вспомогательный метод для сохранения (Preorder)
 void AVLTree::saveNode(std::ofstream& f, Node* node) const {
     if (!node) {
-        // Если узла нет, пишем -1 (маркер пустоты)
         int null_marker = -1;
         f.write(reinterpret_cast<const char*>(&null_marker), sizeof(null_marker));
         return;
     }
-    
-    // Пишем ключ текущего узла
     f.write(reinterpret_cast<const char*>(&node->key), sizeof(node->key));
-    
-    // Рекурсивно идем влево и вправо
     saveNode(f, node->left);
     saveNode(f, node->right);
 }
 
-// Сохранение дерева
 void AVLTree::save(const std::string& filename) const {
     std::ofstream f(filename, std::ios::binary);
     if (!f) return;
-    
-    // Пишем общий размер
     f.write(reinterpret_cast<const char*>(&sz), sizeof(sz));
-    
-    // Запускаем рекурсивное сохранение с корня
     saveNode(f, root);
 }
 
-// Рекурсивное восстановление дерева из файла
+// Вспомогательный метод для загрузки
 AVLTree::Node* AVLTree::loadNode(std::ifstream& f) {
-    int key;
-    // Читаем число
+    int key = 0;
     if (!f.read(reinterpret_cast<char*>(&key), sizeof(key))) return nullptr;
+    if (key == -1) return nullptr; // Маркер пустого узла
     
-    // Если прочитали -1, значит дальше пусто
-    if (key == -1) return nullptr;
-    
-    // Создаем новый узел
     Node* node = new Node(key);
-    
-    // Рекурсивно восстанавливаем левое и правое поддерево
     node->left = loadNode(f);
     node->right = loadNode(f);
-    
-    // Обновляем высоту узла (балансировка не нужна, так как мы восстанавливаем уже готовое дерево)
     updateHeight(node);
-    
     return node;
 }
 
-// Загрузка дерева
 void AVLTree::load(const std::string& filename) {
     std::ifstream f(filename, std::ios::binary);
     if (!f) return;
-    
-    // Очищаем текущее дерево перед загрузкой
     destroyTree(root);
     root = nullptr;
     
-    // Читаем размер
-    f.read(reinterpret_cast<char*>(&sz), sizeof(sz));
+    if (!f.read(reinterpret_cast<char*>(&sz), sizeof(sz))) return;
+    if (sz > 1000000) return; // Защита
     
-    // Восстанавливаем дерево
     root = loadNode(f);
 }

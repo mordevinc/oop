@@ -51,7 +51,7 @@ coverage: test
 # Линтер
 lint:
 	@echo "Запуск линтера cppcheck..."
-	cppcheck --enable=all --suppress=missingIncludeSystem -Iinclude main.cpp src/
+	cppcheck --enable=all --suppress=missingIncludeSystem -Iinclude main.cpp src/ tests/
 	@echo "Проверка завершена."
 
 
@@ -64,7 +64,8 @@ $(BUILD_DIR)/benchmark: benchmark.cpp $(SRC)
 bench: $(BUILD_DIR)/benchmark
 	cd $(BUILD_DIR) && ./benchmark
 
-	
+
 # Очистка
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -f *.bin *.json

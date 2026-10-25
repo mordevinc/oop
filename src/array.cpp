@@ -68,25 +68,56 @@ void Array::save(const std::string& filename) const {
 }
 
 // Десериализация.
-// Десериализация.
+
 void Array::load(const std::string& filename) {
     std::ifstream f(filename, std::ios::binary);
     if (!f) return;
     
     size_t file_sz = 0;
-    // Проверяем, удалось ли прочитать размер
-    if (!f.read(reinterpret_cast<char*>(&file_sz), sizeof(file_sz))) return;
+    if (!f.read(reinterpret_cast<char*>(&file_sz), sizeof(file_sz))) return; // Если файл пуст
     
-    // Ограничиваем размер вместимостью нашего массива
+    // Защита от мусора
+    if (file_sz > 1000000) return;
     sz = (file_sz < capacity) ? file_sz : capacity;
     
     for (size_t i = 0; i < sz; ++i) {
-        size_t len = 0; // Обязательно инициализируем нулем
-        if (!f.read(reinterpret_cast<char*>(&len), sizeof(len))) break; // Если не прочиталось - выходим
+        size_t len = 0;
+        if (!f.read(reinterpret_cast<char*>(&len), sizeof(len))) break;
+        if (len > 1000000) break; // Защита от чтения гигантской строки
         
         std::string temp(len, '\0');
-        if (!f.read(&temp[0], len)) break; // Если строку не прочитали - выходим
-        
+        if (!f.read(&temp[0], len)) break;
         data[i] = temp;
     }
+}
+
+// Вставка по индексу (сдвигаем элементы вправо)
+void Array::insert_at(size_t index, const std::string& value) {
+    if (index > sz || sz >= capacity) return; // Проверка границ и наличия места
+    // Идем с конца, освобождая место для нового элемента
+    for (size_t i = sz; i > index; --i) {
+        data[i] = data[i - 1];
+    }
+    data[index] = value;
+    sz++;
+}
+
+// Получение по индексу
+std::string Array::get(size_t index) const {
+    if (index >= sz) return ""; // Если индекс вне границ, отдаем пустую строку
+    return data[index];
+}
+
+// Замена по индексу
+void Array::set(size_t index, const std::string& value) {
+    if (index < sz) data[index] = value;
+}
+
+// Удаление по индексу (сдвигаем влево)
+void Array::remove_at(size_t index) {
+    if (index >= sz) return;
+    for (size_t i = index; i < sz - 1; ++i) {
+        data[i] = data[i + 1]; // Затираем удаляемый элемент следующим
+    }
+    sz--;
 }

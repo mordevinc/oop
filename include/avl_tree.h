@@ -3,11 +3,12 @@
 
 #include <iostream>
 #include <string>
+#include <fstream> // Нужно для std::ofstream и std::ifstream
 
-// Класс АВЛ-дерева (сбалансированное дерево поиска).
+// Класс АВЛ-дерева
 class AVLTree {
 private:
-    // Узел дерева.
+    // Узел дерева (скрыт от пользователя).
     struct Node {
         int key;      // Ключ узла
         int height;   // Высота поддерева
@@ -19,7 +20,7 @@ private:
     Node* root; // Корень дерева
     size_t sz;  // Количество узлов
 
-    // Вспомогательные методы для балансировки (скрыты от пользователя).
+    // Вспомогательные методы для балансировки
     int getHeight(Node* node) const;
     int getBalance(Node* node) const;
     void updateHeight(Node* node);
@@ -27,35 +28,40 @@ private:
     Node* rotateLeft(Node* x);
     Node* balance(Node* node);
     
-    // Рекурсивная вставка.
+    // Рекурсивные методы для вставки и удаления
     Node* insert(Node* node, int key);
+    Node* removeRec(Node* node, int key); // Вспомогательный для удаления
+    Node* findMin(Node* node);            // Поиск минимума (для удаления)
     
-    // Очистка и печать.
+    // Очистка и обходы
     void destroyTree(Node* node);
     void printInOrder(Node* node) const;
+    void printPreOrder(Node* node) const;
+    void printPostOrder(Node* node) const;
+
+    // Вспомогательные методы для сериализации дерева
+    void saveNode(std::ofstream& f, Node* node) const;
+    Node* loadNode(std::ifstream& f);
 
 public:
-    // Конструктор и деструктор.
+    // Конструктор и деструктор
     AVLTree();
     ~AVLTree();
 
-    // Публичный метод для вставки.
+    // Публичные методы
     void insert(int key);
-    
-    bool contains(int key) const; 
-
-    // Получение размера.
+    void remove(int key); // Удаление элемента
+    bool contains(int key) const;
     size_t size() const;
     
-    // Вывод дерева (симметричный обход).
-    void print() const;
+    // Вывод дерева разными способами
+    void print() const;          // Симметричный (по возрастанию)
+    void printPreorder() const;  // Прямой (корень, лево, право)
+    void printPostorder() const; // Обратный (лево, право, корень)
 
-    // Упрощенная сериализация.
+    // Сериализация
     void save(const std::string& filename) const;
     void load(const std::string& filename);
-        // Вспомогательные методы для сериализации дерева
-    void saveNode(std::ofstream& f, Node* node) const;
-    Node* loadNode(std::ifstream& f);
 };
 
 #endif
