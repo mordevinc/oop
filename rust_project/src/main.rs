@@ -15,7 +15,8 @@ use queue::Queue;
 use hash_table::HashTable;
 use avl_tree::AVLTree;
 
-// Функция для чтения строки из консоли
+
+
 fn read_input() -> String {
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
@@ -23,7 +24,6 @@ fn read_input() -> String {
 }
 
 fn main() {
-    // Инициализируем структуры
     let mut arr = Array::new(100);
     let mut flist = ForwardList::new();
     let mut dlist = DoublyList::new();
@@ -34,93 +34,52 @@ fn main() {
 
     loop {
         println!("\n=== Лабораторная работа №3 (Rust) ===");
-        println!("1. Массив");
-        println!("2. Односвязный список");
-        println!("3. Двусвязный список");
-        println!("4. Стек");
-        println!("5. Очередь");
-        println!("6. Хеш-таблица");
-        println!("7. АВЛ-дерево");
-        println!("0. Выход");
-        print!("Выбор: ");
-        io::stdout().flush().unwrap();
+        println!("1. Массив\n2. Односвязный список\n3. Двусвязный список\n4. Стек\n5. Очередь\n6. Хеш-таблица\n7. АВЛ-дерево\n0. Выход");
+        print!("Выбор: "); io::stdout().flush().unwrap();
 
-        let choice = read_input();
-
-        match choice.as_str() {
+        match read_input().as_str() {
             "1" => {
-                println!("1. Добавить (push)\n2. Вывести\n3. Сохранить\n4. Загрузить");
+                println!("1. Push\n2. Insert_at\n3. Get\n4. Remove\n5. Print");
                 let sub = read_input();
-                if sub == "1" {
-                    print!("Строка: "); io::stdout().flush().unwrap();
-                    arr.push(read_input());
-                } else if sub == "2" { arr.print(); }
-                else if sub == "3" { arr.save("array.bin"); }
-                else if sub == "4" { arr.load("array.bin"); }
+                if sub == "1" { print!("Строка: "); io::stdout().flush().unwrap(); arr.push(read_input()); }
+                else if sub == "2" { print!("Индекс: "); io::stdout().flush().unwrap(); let i = read_input().parse().unwrap_or(0); print!("Строка: "); io::stdout().flush().unwrap(); arr.insert_at(i, read_input()); }
+                else if sub == "3" { print!("Индекс: "); io::stdout().flush().unwrap(); let i = read_input().parse().unwrap_or(0); if let Some(s) = arr.get(i) { println!("{}", s); } else { println!("Нет"); } }
+                else if sub == "4" { print!("Индекс: "); io::stdout().flush().unwrap(); let i = read_input().parse().unwrap_or(0); arr.remove(i); }
+                else if sub == "5" { arr.print(); }
             }
             "2" => {
-                println!("1. В конец (push_back)\n2. В начало (push_front)\n3. Поиск\n4. Вывести\n5. Сохранить\n6. Загрузить");
+                println!("1. Push_back\n2. Insert_after\n3. Remove_by_value\n4. Print");
                 let sub = read_input();
                 if sub == "1" { print!("Строка: "); io::stdout().flush().unwrap(); flist.push_back(read_input()); }
-                else if sub == "2" { print!("Строка: "); io::stdout().flush().unwrap(); flist.push_front(read_input()); }
-                else if sub == "3" { print!("Искать: "); io::stdout().flush().unwrap(); println!("Есть? {}", flist.find(&read_input())); }
+                else if sub == "2" { print!("После чего: "); io::stdout().flush().unwrap(); let target = read_input(); print!("Строка: "); io::stdout().flush().unwrap(); flist.insert_after(&target, read_input()); }
+                else if sub == "3" { print!("Строка: "); io::stdout().flush().unwrap(); flist.remove_by_value(&read_input()); }
                 else if sub == "4" { flist.print(); }
-                else if sub == "5" { flist.save("flist.bin"); }
-                else if sub == "6" { flist.load("flist.bin"); }
             }
             "3" => {
-                println!("1. В конец\n2. В начало\n3. Вывести\n4. Сохранить\n5. Загрузить");
+                println!("1. Push_back\n2. Insert_before\n3. Remove_by_value\n4. Print_reverse");
                 let sub = read_input();
                 if sub == "1" { print!("Строка: "); io::stdout().flush().unwrap(); dlist.push_back(read_input()); }
-                else if sub == "2" { print!("Строка: "); io::stdout().flush().unwrap(); dlist.push_front(read_input()); }
-                else if sub == "3" { dlist.print(); }
-                else if sub == "4" { dlist.save("dlist.bin"); }
-                else if sub == "5" { dlist.load("dlist.bin"); }
+                else if sub == "2" { print!("Перед чем: "); io::stdout().flush().unwrap(); let target = read_input(); print!("Строка: "); io::stdout().flush().unwrap(); dlist.insert_before(&target, read_input()); }
+                else if sub == "3" { print!("Строка: "); io::stdout().flush().unwrap(); dlist.remove_by_value(&read_input()); }
+                else if sub == "4" { dlist.print_reverse(); }
             }
-            "4" => {
-                println!("1. Push\n2. Pop\n3. Вывести\n4. Сохранить\n5. Загрузить");
-                let sub = read_input();
-                if sub == "1" { print!("Строка: "); io::stdout().flush().unwrap(); stack.push(read_input()); }
-                else if sub == "2" { println!("Извлечено: {}", stack.pop()); }
-                else if sub == "3" { stack.print(); }
-                else if sub == "4" { stack.save("stack.bin"); }
-                else if sub == "5" { stack.load("stack.bin"); }
-            }
-            "5" => {
-                println!("1. Push\n2. Pop\n3. Вывести\n4. Сохранить\n5. Загрузить");
-                let sub = read_input();
-                if sub == "1" { print!("Строка: "); io::stdout().flush().unwrap(); queue.push(read_input()); }
-                else if sub == "2" { println!("Извлечено: {}", queue.pop()); }
-                else if sub == "3" { queue.print(); }
-                else if sub == "4" { queue.save("queue.bin"); }
-                else if sub == "5" { queue.load("queue.bin"); }
-            }
+            "4" => { print!("Строка: "); io::stdout().flush().unwrap(); stack.push(read_input()); }
+            "5" => { print!("Строка: "); io::stdout().flush().unwrap(); queue.push(read_input()); }
             "6" => {
-                println!("1. Вставить (key, value)\n2. Вывести\n3. Сохранить\n4. Загрузить");
+                println!("1. Insert\n2. Get\n3. Remove\n4. Print");
                 let sub = read_input();
-                if sub == "1" {
-                    print!("Ключ: "); io::stdout().flush().unwrap(); let k = read_input();
-                    print!("Значение: "); io::stdout().flush().unwrap(); let v = read_input();
-                    ht.insert(k, v);
-                }
-                else if sub == "2" { ht.print(); }
-                else if sub == "3" { ht.save("ht.json"); }
-                else if sub == "4" { ht.load("ht.json"); }
+                if sub == "1" { print!("Ключ: "); io::stdout().flush().unwrap(); let k = read_input(); print!("Значение: "); io::stdout().flush().unwrap(); ht.insert(k, read_input()); }
+                else if sub == "2" { print!("Ключ: "); io::stdout().flush().unwrap(); if let Some(v) = ht.get(&read_input()) { println!("{}", v); } else { println!("Нет"); } }
+                else if sub == "3" { print!("Ключ: "); io::stdout().flush().unwrap(); ht.remove(&read_input()); }
+                else if sub == "4" { ht.print(); }
             }
             "7" => {
-                println!("1. Вставить (число)\n2. Поиск\n3. Вывести\n4. Сохранить\n5. Загрузить");
+                println!("1. Insert\n2. Remove\n3. Print_preorder\n4. Print_postorder");
                 let sub = read_input();
-                if sub == "1" {
-                    print!("Число: "); io::stdout().flush().unwrap();
-                    if let Ok(num) = read_input().parse::<i32>() { tree.insert(num); }
-                }
-                else if sub == "2" {
-                    print!("Искать: "); io::stdout().flush().unwrap();
-                    if let Ok(num) = read_input().parse::<i32>() { println!("Есть? {}", tree.contains(num)); }
-                }
-                else if sub == "3" { tree.print(); }
-                else if sub == "4" { tree.save("tree.bin"); }
-                else if sub == "5" { tree.load("tree.bin"); }
+                if sub == "1" { print!("Число: "); io::stdout().flush().unwrap(); tree.insert(read_input().parse().unwrap_or(0)); }
+                else if sub == "2" { print!("Число: "); io::stdout().flush().unwrap(); tree.remove(read_input().parse().unwrap_or(0)); }
+                else if sub == "3" { tree.print_preorder(); }
+                else if sub == "4" { tree.print_postorder(); }
             }
             "0" => break,
             _ => println!("Неверный ввод!"),

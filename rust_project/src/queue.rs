@@ -37,11 +37,33 @@ impl Queue {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn test_queue() {
+    fn test_push_pop() {
         let mut q = Queue::new();
         q.push("A".to_string());
         q.push("B".to_string());
-        assert_eq!(q.pop(), "A"); // FIFO
+        assert_eq!(q.pop(), "A");
+        assert_eq!(q.pop(), "B");
+        // Проверяем pop из пустой очереди
+        assert_eq!(q.pop(), "Пусто");
+    }
+
+    #[test]
+    fn test_print() {
+        let mut q = Queue::new();
+        q.push("X".to_string());
+        q.print();
+    }
+
+    #[test]
+    fn test_serialization() {
+        let mut q = Queue::new();
+        q.push("Data".to_string());
+        q.save("test_queue.bin");
+        
+        let mut q2 = Queue::new();
+        q2.load("test_queue.bin");
+        assert_eq!(q2.data.len(), 1);
     }
 }
